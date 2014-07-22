@@ -1,0 +1,100 @@
+---
+title: "Practical Machine Learning Peer Assessment 1"
+author: "William Student"
+date: "July 22, 2014"
+output: html_document
+---
+
+
+### Load libraries
+The necessary packages are loaded. `Caret` is needed for machine learning training, prediction and error analysis. `doMC` is needed to speed up training by using parallel processing on several cores.
+```{r echo=TRUE, warning=FALSE}
+library(caret)
+library(doMC)
+```
+
+### Load data
+The data is read from the .csv files that were provided for this peer assessment and that need to be saved in the working directory.
+```{r echo=TRUE}
+train.data = read.csv("pml-training.csv")
+test.data = read.csv("pml-testing.csv")
+```
+
+### Process data
+All columns are deleted in the training and testing data where there is at least one missing value in either the training or testing data. Columns 1 to 7 are removed as these are not meaningful for the training. All other columns except the outcome column are transformed to numeric values. The outcome column remains a factor.
+
+```{r echo=FALSE, warning=FALSE}
+train.delete=NULL
+for (i in 8:ncol(train.data)-1) {
+  if (any(is.na(train.data[,i]) | is.na(test.data[,i]) )) {
+    train.delete = c(train.delete,i)
+  }
+  else {
+    train.data[,i] = as.numeric(train.data[,i])
+    test.data[,i] = as.numeric(test.data[,i])  
+  }
+}
+train.data=train.data[,-train.delete]
+test.data=test.data[,-train.delete]
+train.data=train.data[,-seq(1:7)]
+test.data=test.data[,-seq(1:7)]
+```
+
+### Split training data into training and test data subsets
+The training data that was provided is split into a training subset and a testing subset. Please note that higher values of p (e.g. 0.8) result in better prediction quality while lower values of p (e.g. 0.2) result in better processing speed. The p value currently used is 0.2.
+
+```{r echo=TRUE}
+set.seed(1)
+inTrain = createDataPartition(y=train.data$classe,p=0.2,list=FALSE)
+train.set = train.data[inTrain,]
+test.set = train.data[-inTrain,]
+```
+
+### Initiate parallel processing
+Parallel computing is initialized for training the model. Please note that the number of cores need to be adjusted to the number of cores of the computer that is used.
+```{r echo=TRUE}
+registerDoMC(cores = 4)
+```
+
+### Train the model
+The model is training based of the training data subset within the training data. As the problem is a classification problem, the random forest method is used. All variables are used to train the model.
+```{r echo=TRUE}
+modFit = train(classe ~., data= train.set,method = "rf")
+```
+
+### Predict new values based on test set within training set
+New values are predicted based on the testing data subset within the training data. The table shows that most values are predicted correctly.
+```{r echo=TRUE}
+pred = predict(modFit,test.set)
+table(pred,test.set$classe)
+```
+
+### Estimate prediction error based on test set within training set
+By using the `confusionMatrix` function, the prediction error can be estimated. The matrix shows that the prediction quality is very high.
+
+```{r echo=TRUE}
+confusionMatrix(pred,test.set$classe)
+```
+
+### Apply to 20 test cases
+The trained model is applied to the 20 cases provided in the testing data.
+```{r echo=TRUE}
+answers = rep("A", 20)
+for (i in 1:20) {
+  answers[i] = as.character(predict(modFit,test.data[i,]))
+}
+print(answers)
+```
+
+### Create files for automatic submission
+The answers are written to the submission files based on the algorithm provided as part of the assignment.
+```{r echo=TRUE}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(answers)
+```
