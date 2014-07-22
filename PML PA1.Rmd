@@ -70,7 +70,7 @@ table(pred,test.set$classe)
 ```
 
 ### Estimate prediction error based on test set within training set
-By using the `confusionMatrix` function, the prediction error can be estimated. The matrix shows that the prediction quality is very high.
+By using the `confusionMatrix` function, the out-of-sample prediction error can be estimated. The matrix shows that the out-of-sample prediction quality is expected to be very high. The overall accuracy is 96.9% even at a relatively low p value of 0.2 (see above). The sensitivity across all outcomes is >=93.9% and the specificity across all outcomes is >=98.6% .
 
 ```{r echo=TRUE}
 confusionMatrix(pred,test.set$classe)

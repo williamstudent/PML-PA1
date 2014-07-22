@@ -117,7 +117,7 @@ table(pred,test.set$classe)</code></pre>
 </div>
 <div id="estimate-prediction-error-based-on-test-set-within-training-set" class="section level3">
 <h3>Estimate prediction error based on test set within training set</h3>
-<p>By using the <code>confusionMatrix</code> function, the prediction error can be estimated. The matrix shows that the prediction quality is very high.</p>
+<p>By using the <code>confusionMatrix</code> function, the out-of-sample prediction error can be estimated. The matrix shows that the out-of-sample prediction quality is expected to be very high. The overall accuracy is 96.9% even at a relatively low p value of 0.2 (see above). The sensitivity across all outcomes is &gt;=93.9% and the specificity across all outcomes is &gt;=98.6% .</p>
 <pre class="r"><code>confusionMatrix(pred,test.set$classe)</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
